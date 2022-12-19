@@ -56,15 +56,21 @@ impl Port {
 }
 
 pub struct Device {
-    pub name: String,
+    pub id: String,
+    pub name: Option<String>,
     pub mac: Vec<MacAddress>,
     pub ports: HashMap<String, Port>,
 }
 
 impl Device {
+    fn name(&self) -> &str {
+        self.name.as_ref().unwrap_or(&self.id)
+    }
+
     fn from_config(config: &DeviceConfig) -> Self {
         Device {
-            name: config.name.clone().unwrap_or_else(|| config.id.clone()),
+            id: config.id.clone(),
+            name: config.name.clone(),
             mac: config.mac.clone(),
             ports: config
                 .ports
@@ -126,7 +132,7 @@ impl Network {
 
     pub fn map(&self) {
         for device in self.devices.iter() {
-            println!("Device {}", device.name);
+            println!("Device {}: {:?}", device.name(), device.mac);
             for port in device.ports.values() {
                 println!("  Port {}", port.name);
                 for visible in port.visible.iter() {

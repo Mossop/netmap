@@ -41,6 +41,14 @@ fn parse_port_data(data: String, _format: PortDataFormat) -> Result<ExpireSet<Ma
     let expiry = Instant::now() + Duration::from_secs(5);
 
     for line in data.split('\n') {
+        if line.len() != 17 {
+            continue;
+        }
+
+        if line.chars().nth(2) != Some(':') {
+            continue;
+        }
+
         let mac = unwrap_result_or_continue!(MacAddress::from_str(line));
         log::trace!("hostapd reported hardware {}", mac);
         set.insert(mac, expiry);
