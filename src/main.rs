@@ -22,7 +22,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut network = Network::try_from(path.as_ref())?;
     network.poll()?;
-    network.map();
+    println!("{}", network.map());
 
     Ok(())
 }

@@ -5,7 +5,7 @@ use std::{
     time::Instant,
 };
 
-#[derive(Eq)]
+#[derive(Eq, Clone)]
 struct ExpireItem<T> {
     item: T,
     expiry: Instant,
@@ -35,7 +35,7 @@ impl<T> Borrow<T> for ExpireItem<T> {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct ExpireSet<T> {
     inner: HashSet<ExpireItem<T>>,
 }
@@ -64,6 +64,18 @@ where
         self.inner.replace(ExpireItem { item, expiry });
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.inner.is_empty()
+    }
+
+    pub fn contains(&self, item: &T) -> bool {
+        self.inner.contains(item)
+    }
+
+    pub fn remove(&mut self, item: &T) -> bool {
+        self.inner.remove(item)
+    }
+
     pub fn extend_from(&mut self, other: ExpireSet<T>) {
         for item in other.inner {
             self.insert(item.item, item.expiry);
@@ -76,5 +88,14 @@ where
         newset.reserve(self.inner.len());
         newset.extend(self.inner.drain().filter(|ei| ei.expiry < now));
         self.inner = newset;
+    }
+}
+
+impl<T> From<ExpireSet<T>> for HashSet<T>
+where
+    T: Eq + Hash,
+{
+    fn from(set: ExpireSet<T>) -> Self {
+        set.inner.into_iter().map(|i| i.item).collect()
     }
 }

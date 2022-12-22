@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::hash::Hash;
 
+#[derive(Clone)]
 pub struct MultiMap<K, V> {
     next_index: usize,
     indexes: HashMap<K, usize>,
@@ -30,10 +31,40 @@ where
         }
     }
 
+    pub fn contains_key(&self, key: &K) -> bool {
+        self.indexes.contains_key(key)
+    }
+
+    pub fn values(&self) -> impl Iterator<Item = &V> {
+        self.values.values()
+    }
+
+    pub fn values_mut(&mut self) -> impl Iterator<Item = &mut V> {
+        self.values.values_mut()
+    }
+
+    pub fn get(&self, key: &K) -> Option<&V> {
+        self.indexes.get(key).and_then(|idx| self.values.get(idx))
+    }
+
     pub fn get_mut(&mut self, key: &K) -> Option<&mut V> {
         self.indexes
             .get(key)
             .and_then(|idx| self.values.get_mut(idx))
+    }
+
+    pub fn visit_pairs<F>(&mut self, mut visit: F)
+    where
+        F: FnMut(&mut V, &mut V),
+    {
+        let mut values: Vec<&mut V> = self.values.values_mut().collect();
+
+        while values.len() > 1 {
+            let left = values.remove(values.len() - 1);
+            for right in values.iter_mut() {
+                visit(left, *right);
+            }
+        }
     }
 }
 

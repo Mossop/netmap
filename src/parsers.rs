@@ -114,7 +114,7 @@ fn parse_device_data(
 
                 let port = unwrap_option_or_continue!(parts.next());
                 let flags: HashSet<&str> = parts.collect();
-                if flags.contains("permanent") || flags.contains("self") {
+                if flags.contains("permanent") {
                     continue;
                 }
 
